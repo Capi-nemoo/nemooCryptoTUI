@@ -1,15 +1,24 @@
+#include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <iostream>
  
 int main(void) {
   using namespace ftxui;
-  auto screen = Screen::Create(Dimension::Fixed(32), Dimension::Fixed(10));
  
-  auto& pixel = screen.PixelAt(9,9);
-  pixel.character = U'A';
-  pixel.bold = true;
-  pixel.foreground_color = Color::Blue;
+  // Define the document
+  Element document =
+    hbox({
+      text("left")   | border,
+      text("middle") | border | flex,
+      text("right")  | border,
+    });
  
-  std::cout << screen.ToString();
+  auto screen = Screen::Create(
+    Dimension::Full(),       // Width
+    Dimension::Fit(document) // Height
+  );
+  Render(screen, document);
+  screen.Print();
+ 
   return EXIT_SUCCESS;
 }
