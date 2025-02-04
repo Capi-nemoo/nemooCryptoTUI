@@ -15,8 +15,11 @@ int main() {
   // -------------------------------
   // 'selected_tab' tracks which tab is currently selected in the menu.
   int selected_tab = 0;
+  int selected_menu = 0;
   // 'tab_entries' is a list of the names for the tabs.
   std::vector<std::string> tab_entries = {"|   Crypto   |", "|   Fiat   |" , "|   Favorites   |"};
+  // define the menu entries list 
+  std::vector<std::string> menu_entries = {" Refresh Interval ", " Preferences ", " Exit "};
   // 'show_settings' determines whether the settings view is displayed.
   bool show_settings = false;
 
@@ -25,16 +28,15 @@ int main() {
   // -------------------------------
   // Create a horizontal menu for selecting tabs.
   auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
+  // Create a Vertical menu for selecting settings_menu.
+  auto settings_menu = Menu(&menu_entries, &selected_menu, MenuOption::Vertical());
 
   // Create the settings component.
   // This view displays various settings options.
-  auto settings_component = Renderer([&] {
+  auto settings_component = Renderer(settings_menu, [&] {
     return vbox({
-      text("Settings Menu") | bold | center,
+      settings_menu->Render() | flex,
       separator(),
-      text("- Refresh Interval"),
-      text("- Currency Preferences"),
-      text("- API Configuration"),
       text("Press ESC to return") | color(Color::GrayDark) | center,
     }) | border | clear_under | center;
   });
