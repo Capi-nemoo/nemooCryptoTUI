@@ -11,25 +11,29 @@ int main() {
   auto screen = ScreenInteractive::Fullscreen();
 
   // -------------------------------
-  // State Variables
+  // tabs menu 
   // -------------------------------
   // 'selected_tab' tracks which tab is currently selected in the menu.
   int selected_tab = 0;
-  int selected_menu = 0;
+
   // 'tab_entries' is a list of the names for the tabs.
   std::vector<std::string> tab_entries = {"|   Crypto   |", "|   Fiat   |" , "|   Favorites   |"};
-  // define the menu entries list 
-  std::vector<std::string> menu_entries = {" Refresh Interval ", " Preferences ", " Exit "};
+
+  // Create a horizontal menu for selecting tabs.
+  auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
+
+  // -------------------------------
+  // selected_config_menu
+  // -------------------------------
   // 'show_settings' determines whether the settings view is displayed.
   bool show_settings = false;
 
-  // -------------------------------
-  // Components
-  // -------------------------------
-  // Create a horizontal menu for selecting tabs.
-  auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
-  // Create a Vertical menu for selecting settings_menu.
-  auto settings_menu = Menu(&menu_entries, &selected_menu, MenuOption::Vertical());
+  int selected_settings_menu = 0;
+
+  // Define the menu entries list - array 
+  std::vector<std::string> menu_entries = {" Refresh Interval ", " Preferences ", " Exit "};
+  auto settings_menu = Menu(&menu_entries, &selected_settings_menu, MenuOption::Vertical());
+
 
   // Create the settings component.
   // This view displays various settings options.
