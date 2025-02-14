@@ -1,114 +1,96 @@
+#include "ftxui/component/component.hpp"
+#include "ftxui/component/screen_interactive.hpp"
+#include <ftxui/dom/elements.hpp>
 #include <memory>
 #include <string>
 #include <vector>
-#include "ftxui/component/component.hpp"
-#include "ftxui/component/screen_interactive.hpp"
 
 using namespace ftxui;
 
 int main() {
-  // Create a full-screen interactive FTXUI screen.
   auto screen = ScreenInteractive::Fullscreen();
 
-  // -------------------------------
-  // tabs menu 
-  // -------------------------------
-  // 'selected_tab' tracks which tab is currently selected in the menu.
+  // Variables de estado
   int selected_tab = 0;
-
-  // 'tab_entries' is a list of the names for the tabs.
-  std::vector<std::string> tab_entries = {"|   Crypto   |", "|   Fiat   |" , "|   Favorites   |"};
-
-  // Create a horizontal menu for selecting tabs.
-  auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
-
-  // -------------------------------
-  // selected_config_menu
-  // -------------------------------
-  // 'show_settings' determines whether the settings view is displayed.
+  std::vector<std::string> tab_entries = {"Crypto", "Fiat", "Favorites"};
   bool show_settings = false;
 
-  int selected_settings_menu = 0;
+  std::vector<std::string> settings_entries = {"Menu", "API Configuration",
+                                               "Themes"};
+  // Componente: menú de pestañas
+  auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
 
-  // Define the menu entries list - array 
-  std::vector<std::string> menu_entries = {" Refresh Interval ", " Preferences ", " Exit "};
-  auto settings_menu = Menu(&menu_entries, &selected_settings_menu, MenuOption::Vertical());
-
-
-  // Create the settings component.
-  // This view displays various settings options.
+  auto settings_menu =
+      Menu(&tab_entries, &selected_tab, MenuOption::Vertical());
+  // Componente: settings
   auto settings_component = Renderer(settings_menu, [&] {
-    return vbox({
-      settings_menu->Render() | flex,
-      separator(),
-      text("Press ESC to return") | color(Color::GrayDark) | center,
-    }) | border | clear_under | center;
+    std::string content;
+    switch (selected_tab) {
+    case 0:
+      content = "mfkdasdjf";
+      break;
+    case 1:
+      content = "79";
+      break;
+    case 2:
+      content = "★ BTC";
+      break;
+    }
+
+    return vbox({settings_menu->Render()}) | border | clear_under | center;
   });
 
-  // Create the main content component.
-  // It uses the current tab (selected_tab) to display different content.
-  // The tab_menu is also rendered here in the header.
+  // Componente: contenido principal
   auto main_component = Renderer(tab_menu, [&] {
     std::string content;
-    switch(selected_tab) {
-      case 0:
-        content = "BTC: $00,000.00 (+0.00%)\nETH: $0,000.00 (+0.00%)";
-        break;
-      case 1:
-        content = "USD: 1.00\nEUR: 0.92\nGBP: 0.79";
-        break;
-      case 2:
-        content = "★ BTC\n★ ETH\n★ USD/EUR";
-        break;
+    switch (selected_tab) {
+    case 0:
+      content = "BTC: $00,000.00 (+0.00%)\nETH: $0,000.00 (+0.00%)";
+      break;
+    case 1:
+      content = "USD: 1.00\nEUR: 0.92\nGBP: 0.79";
+      break;
+    case 2:
+      content = "★ BTC\n★ ETH\n★ USD/EUR";
+      break;
     }
 
-    return vbox({
-      // Header: contains the tab menu and a prompt to access settings.
-      hbox({
-        tab_menu->Render() | flex,
-        separator(),
-        text("Press ESC for settings") | align_right,
-      }) | border,
-      
-      // Main content area: displays tab-specific information.
-      vbox({
-        text(content) | center | flex,
-      }) | flex
-    }) | flex;
+    return vbox({// Cabecera: menú y aviso de settings
+                 hbox({
+                     tab_menu->Render() | flex,
+                     separator(),
+                     text("settings(ESC)") | align_right,
+                 }) | border,
+
+                 // Contenido central
+                 vbox({
+                     text(content) | center | flex,
+                 }) | flex}) |
+           flex;
   });
 
-  // -------------------------------
-  // Container for Views
-  // -------------------------------
-  // 'active_tab_index' indicates which component (tab) is active:
-  // 0 for the main content, 1 for the settings view.
+  // Variable para indicar qué componente (pestaña) está activo:
   int active_tab_index = 0;
 
-  // Combine the main content and settings components into a tab container.
-  // This container will show the component at 'active_tab_index'.
-  auto main_container = Container::Tab({ main_component, settings_component }, &active_tab_index);
+  // Se combinan los componentes en un contenedor de pestañas.
+  // La posición 0 es main_component y la 1 es settings_component.
+  auto main_container =
+      Container::Tab({main_component, settings_component}, &active_tab_index);
 
-  // Make sure the container has keyboard focus so it can receive events.
+  // Aseguramos que el contenedor principal tenga el foco.
   main_container->TakeFocus();
 
-  // -------------------------------
-  // Global Event Handler
-  // -------------------------------
-  // This handler listens for key events. When ESC is pressed,
-  // it toggles between the main view and the settings view.
+  // Manejador global de eventos: alterna entre el contenido principal y
+  // settings al presionar ESC.
   auto global_handler = CatchEvent(main_container, [&](Event event) {
     if (event == Event::Escape) {
-      // Toggle the 'show_settings' flag.
       show_settings = !show_settings;
-      // Update the active tab: 1 for settings, 0 for main content.
       active_tab_index = show_settings ? 1 : 0;
-      return true;  // Event has been handled.
+      return true;
     }
-    return false;  // Let other events propagate if not handled.
+    return false;
   });
 
-  // Start the main event loop.
   screen.Loop(global_handler);
   return EXIT_SUCCESS;
 }
-
