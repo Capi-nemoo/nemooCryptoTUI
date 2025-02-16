@@ -1,7 +1,6 @@
 #include "ftxui/component/component.hpp"
 #include "ftxui/component/screen_interactive.hpp"
 #include <ftxui/dom/elements.hpp>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -9,38 +8,12 @@ using namespace ftxui;
 
 int main() {
   auto screen = ScreenInteractive::Fullscreen();
+  int active_tab_index = 0;
 
-  // Variables de estado
+  std::vector<std::string> tab_entries = {"  Crypto  ", "  Fiat  ",
+                                          "  Favorites  "};
   int selected_tab = 0;
-  std::vector<std::string> tab_entries = {"Crypto", "Fiat", "Favorites"};
-  bool show_settings = false;
-
-  std::vector<std::string> settings_entries = {"Menu", "API Configuration",
-                                               "Themes"};
-  // Componente: menú de pestañas
   auto tab_menu = Menu(&tab_entries, &selected_tab, MenuOption::Horizontal());
-
-  auto settings_menu =
-      Menu(&tab_entries, &selected_tab, MenuOption::Vertical());
-  // Componente: settings
-  auto settings_component = Renderer(settings_menu, [&] {
-    std::string content;
-    switch (selected_tab) {
-    case 0:
-      content = "mfkdasdjf";
-      break;
-    case 1:
-      content = "79";
-      break;
-    case 2:
-      content = "★ BTC";
-      break;
-    }
-
-    return vbox({settings_menu->Render()}) | border | clear_under | center;
-  });
-
-  // Componente: contenido principal
   auto main_component = Renderer(tab_menu, [&] {
     std::string content;
     switch (selected_tab) {
@@ -54,34 +27,45 @@ int main() {
       content = "★ BTC\n★ ETH\n★ USD/EUR";
       break;
     }
-
-    return vbox({// Cabecera: menú y aviso de settings
-                 hbox({
+    return vbox({hbox({
                      tab_menu->Render() | flex,
                      separator(),
                      text("settings(ESC)") | align_right,
                  }) | border,
-
-                 // Contenido central
                  vbox({
                      text(content) | center | flex,
                  }) | flex}) |
            flex;
   });
 
-  // Variable para indicar qué componente (pestaña) está activo:
-  int active_tab_index = 0;
+  //-----------------------------------------------------------------------------
+  std::vector<std::string> settings_entries = {"Menu", "API Configuration",
+                                               "Themes"};
+  bool show_settings = false;
+  int selected_tab_settings = 0;
+  auto settings_menu =
+      Menu(&settings_entries, &selected_tab_settings, MenuOption::Vertical());
+  auto settings_component = Renderer(settings_menu, [&] {
+    std::string content;
+    switch (selected_tab_settings) {
+    case 0:
+      content = " Menu goes here ";
+      break;
+    case 1:
+      content = " API goes here ";
+      break;
+    case 2:
+      content = "Menu options here ";
+      break;
+    }
+    return vbox({settings_menu->Render()}) | border | clear_under | center;
+  });
 
-  // Se combinan los componentes en un contenedor de pestañas.
-  // La posición 0 es main_component y la 1 es settings_component.
+  //------------------------------------------------------------------------------
+
   auto main_container =
       Container::Tab({main_component, settings_component}, &active_tab_index);
-
-  // Aseguramos que el contenedor principal tenga el foco.
   main_container->TakeFocus();
-
-  // Manejador global de eventos: alterna entre el contenido principal y
-  // settings al presionar ESC.
   auto global_handler = CatchEvent(main_container, [&](Event event) {
     if (event == Event::Escape) {
       show_settings = !show_settings;
@@ -90,7 +74,6 @@ int main() {
     }
     return false;
   });
-
   screen.Loop(global_handler);
   return EXIT_SUCCESS;
 }
